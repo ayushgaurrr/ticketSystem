@@ -16,24 +16,24 @@ const TicketDetailPage: React.FC = () => {
   const { getTicketById, addComment } = useTickets();
   const { currentUser, isAdmin } = useAuth();
   const navigate = useNavigate();
-  
+
   const [ticket, setTicket] = useState<Ticket | undefined>();
   const [newComment, setNewComment] = useState('');
   const [isInternal, setIsInternal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   useEffect(() => {
     if (ticketId) {
       const foundTicket = getTicketById(ticketId);
       setTicket(foundTicket);
-      
+
       if (!foundTicket) {
         // Ticket not found
         navigate('/tickets');
       }
     }
   }, [ticketId, getTicketById, navigate]);
-  
+
   if (!ticket || !currentUser) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -41,7 +41,7 @@ const TicketDetailPage: React.FC = () => {
       </div>
     );
   }
-  
+
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleString('en-US', {
       year: 'numeric',
@@ -51,23 +51,23 @@ const TicketDetailPage: React.FC = () => {
       minute: '2-digit',
     });
   };
-  
+
   const isUserTicket = currentUser.id === ticket.userId;
-  
+
   const handleSubmitComment = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (!newComment.trim()) {
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
       await addComment(ticket.id, newComment, isInternal);
       setNewComment('');
       setIsInternal(false);
-      
+
       // Refresh ticket
       const updatedTicket = getTicketById(ticket.id);
       setTicket(updatedTicket);
@@ -77,14 +77,15 @@ const TicketDetailPage: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-  
+
   const renderUserInfo = (comment: Comment) => {
-    const isAdmin = comment.userId.startsWith('admin');
-    const userName = isAdmin ? 'Support Agent' : 'You';
-    
+    // Renamed isAdmin to isCommentAdmin to avoid confusion with the isAdmin from useAuth()
+    const isCommentAdmin = comment.userId.startsWith('admin');
+    const userName = isCommentAdmin ? 'Support Agent' : 'You';
+
     return (
       <div className="flex items-center">
-        <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white ${isAdmin ? 'bg-blue-500' : 'bg-gray-500'}`}>
+        <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white ${isCommentAdmin ? 'bg-blue-500' : 'bg-gray-500'}`}>
           <User className="h-4 w-4" />
         </div>
         <div className="ml-2">
@@ -93,7 +94,7 @@ const TicketDetailPage: React.FC = () => {
             {formatDate(comment.createdAt)}
           </div>
         </div>
-        {isAdmin && comment.isInternal && (
+        {isCommentAdmin && comment.isInternal && (
           <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
             Internal
           </span>
@@ -101,7 +102,7 @@ const TicketDetailPage: React.FC = () => {
       </div>
     );
   };
-  
+
   return (
     <div>
       <div className="mb-6">
@@ -112,7 +113,7 @@ const TicketDetailPage: React.FC = () => {
           <ChevronLeft className="h-4 w-4 mr-1" />
           Back to Tickets
         </button>
-        
+
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 md:mb-0">
             {ticket.subject}
@@ -124,9 +125,10 @@ const TicketDetailPage: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
+          {/* ORIGINAL TICKET DESCRIPTION CARD - remains first for context */}
           <Card className="mb-6">
             <CardBody>
               <div className="flex items-center mb-4">
@@ -140,11 +142,11 @@ const TicketDetailPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="prose max-w-none">
                 <p className="whitespace-pre-line">{ticket.description}</p>
               </div>
-              
+
               {ticket.attachments.length > 0 && (
                 <div className="mt-4 border-t pt-4">
                   <h4 className="font-medium mb-2 flex items-center">
@@ -179,45 +181,23 @@ const TicketDetailPage: React.FC = () => {
               )}
             </CardBody>
           </Card>
-          
-          {ticket.comments.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                Conversation
-              </h3>
-              
-              <div className="space-y-4">
-                {ticket.comments
-                  .filter(comment => !comment.isInternal || isAdmin)
-                  .map(comment => (
-                    <Card key={comment.id}>
-                      <CardBody>
-                        {renderUserInfo(comment)}
-                        <div className="mt-2 whitespace-pre-line">
-                          {comment.content}
-                        </div>
-                      </CardBody>
-                    </Card>
-                  ))}
-              </div>
-            </div>
-          )}
-          
-          <Card>
+
+          {/* ADD A COMMENT CARD - This will now stay above the conversation */}
+          <Card className="mb-4"> {/* Added mb-6 for spacing */}
             <form onSubmit={handleSubmitComment}>
               <CardBody>
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">
                   Add a Comment
                 </h3>
-                
+
                 <TextArea
                   value={newComment}
                   onChange={e => setNewComment(e.target.value)}
                   placeholder="Type your comment here..."
-                  rows={4}
+                  rows={2}
                   required
                 />
-                
+
                 {isAdmin && (
                   <div className="mt-2 flex items-center">
                     <input
@@ -236,11 +216,12 @@ const TicketDetailPage: React.FC = () => {
                   </div>
                 )}
               </CardBody>
-              
+
               <CardFooter className="flex justify-end">
                 <Button
                   type="submit"
                   variant="primary"
+                  size="sm" // or "default"
                   rightIcon={<Send className="h-4 w-4" />}
                   isLoading={isSubmitting}
                 >
@@ -249,8 +230,35 @@ const TicketDetailPage: React.FC = () => {
               </CardFooter>
             </form>
           </Card>
+
+          {/* CONVERSATION SECTION - New comments will appear at the top here */}
+          {ticket.comments.length > 0 && (
+            <div className="mt-4"> {/* Changed to mt-4 as the card above has mb-6 */}
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                Conversation
+              </h3>
+
+              <div className="space-y-4">
+                {ticket.comments
+                  .filter(comment => !comment.isInternal || isAdmin)
+                  // Sort comments by newest first (descending order of creation date)
+                  .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                  .map(comment => (
+                    <Card key={comment.id}>
+                      <CardBody>
+                        {renderUserInfo(comment)}
+                        <div className="mt-2 whitespace-pre-line">
+                          {comment.content}
+                        </div>
+                      </CardBody>
+                    </Card>
+                  ))}
+              </div>
+            </div>
+          )}
         </div>
-        
+
+        {/* Right column for Ticket Information */}
         <div>
           <Card>
             <CardHeader>
@@ -258,7 +266,7 @@ const TicketDetailPage: React.FC = () => {
                 Ticket Information
               </h3>
             </CardHeader>
-            
+
             <CardBody>
               <div className="space-y-4">
                 <div>
@@ -267,21 +275,21 @@ const TicketDetailPage: React.FC = () => {
                   </div>
                   <TicketStatusBadge status={ticket.status} />
                 </div>
-                
+
                 <div>
                   <div className="text-sm font-medium text-gray-500 mb-1">
                     Priority
                   </div>
                   <TicketPriorityBadge priority={ticket.priority} />
                 </div>
-                
+
                 <div>
                   <div className="text-sm font-medium text-gray-500 mb-1">
                     Type
                   </div>
                   <TicketTypeBadge type={ticket.type} />
                 </div>
-                
+
                 <div className="border-t pt-4">
                   <div className="flex items-center">
                     <Clock className="h-4 w-4 text-gray-400" />
@@ -289,7 +297,7 @@ const TicketDetailPage: React.FC = () => {
                       Submitted: {formatDate(ticket.createdAt)}
                     </span>
                   </div>
-                  
+
                   {ticket.updatedAt > ticket.createdAt && (
                     <div className="flex items-center mt-2">
                       <CalendarClock className="h-4 w-4 text-gray-400" />
@@ -299,7 +307,7 @@ const TicketDetailPage: React.FC = () => {
                     </div>
                   )}
                 </div>
-                
+
                 {isAdmin && (
                   <div className="border-t pt-4">
                     <div className="text-sm font-medium text-gray-500 mb-1">
@@ -321,7 +329,7 @@ const TicketDetailPage: React.FC = () => {
               </div>
             </CardBody>
           </Card>
-          
+
           <div className="mt-6">
             <Button
               variant="outline"

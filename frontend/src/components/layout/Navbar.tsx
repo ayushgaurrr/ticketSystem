@@ -11,27 +11,27 @@ const Navbar: React.FC = () => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  
-  const notifications = currentUser 
-    ? getUserNotifications(currentUser.id).sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
+
+  const notifications = currentUser
+    ? getUserNotifications(currentUser.id).sort((a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
     : [];
-  
+
   const unreadCount = notifications.filter(n => !n.read).length;
-  
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
-  
+
   const toggleNotifications = () => {
     setIsNotificationsOpen(!isNotificationsOpen);
   };
-  
+
   const handleNotificationClick = (id: string) => {
     markNotificationAsRead(id);
   };
-  
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -42,93 +42,76 @@ const Navbar: React.FC = () => {
         }
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
-    
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isNotificationsOpen]);
-  
+
   // Close mobile menu on navigation
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
-  
+
   return (
     <nav className="bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center">
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className="h-8 w-8 text-blue-600"
-              >
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-              </svg>
+              <img src='/bpllogo.png' alt="Logo" className="h-8 w-8" />
               <span className="ml-2 text-xl font-bold text-gray-800">
-                HelpDesk
+                Big Pluto
               </span>
             </Link>
-            
+
             <div className="hidden md:flex ml-10 space-x-8">
               <Link
                 to="/"
-                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  location.pathname === '/'
+                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${location.pathname === '/'
                     ? 'border-blue-500 text-gray-900'
                     : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 Dashboard
               </Link>
-              
+
               <Link
                 to="/tickets"
-                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  location.pathname.startsWith('/tickets')
+                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${location.pathname.startsWith('/tickets')
                     ? 'border-blue-500 text-gray-900'
                     : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 My Tickets
               </Link>
-              
+
               <Link
                 to="/submit"
-                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                  location.pathname === '/submit'
+                className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${location.pathname === '/submit'
                     ? 'border-blue-500 text-gray-900'
                     : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 Submit Ticket
               </Link>
-              
+
               {isAdmin && (
                 <Link
                   to="/admin"
-                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                    location.pathname.startsWith('/admin')
+                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${location.pathname.startsWith('/admin')
                       ? 'border-blue-500 text-gray-900'
                       : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                  }`}
+                    }`}
                 >
                   Admin Panel
                 </Link>
               )}
             </div>
           </div>
-          
+
           {currentUser ? (
             <div className="hidden md:flex items-center">
               <div className="relative" id="notifications-dropdown">
@@ -144,14 +127,14 @@ const Navbar: React.FC = () => {
                     </span>
                   )}
                 </button>
-                
+
                 {isNotificationsOpen && (
                   <div className="origin-top-right absolute right-0 mt-2 w-80 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
                     <div className="py-1">
                       <h3 className="px-4 py-2 text-sm font-semibold text-gray-700 border-b">
                         Notifications
                       </h3>
-                      
+
                       <div className="max-h-60 overflow-y-auto">
                         {notifications.length === 0 ? (
                           <p className="px-4 py-2 text-sm text-gray-500">
@@ -161,9 +144,8 @@ const Navbar: React.FC = () => {
                           notifications.slice(0, 5).map((notification) => (
                             <div
                               key={notification.id}
-                              className={`px-4 py-2 border-b last:border-b-0 cursor-pointer hover:bg-gray-50 ${
-                                !notification.read ? 'bg-blue-50' : ''
-                              }`}
+                              className={`px-4 py-2 border-b last:border-b-0 cursor-pointer hover:bg-gray-50 ${!notification.read ? 'bg-blue-50' : ''
+                                }`}
                               onClick={() => handleNotificationClick(notification.id)}
                             >
                               <div className="text-sm text-gray-700">
@@ -176,7 +158,7 @@ const Navbar: React.FC = () => {
                           ))
                         )}
                       </div>
-                      
+
                       {notifications.length > 5 && (
                         <Link
                           to="/notifications"
@@ -189,7 +171,7 @@ const Navbar: React.FC = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="ml-4 flex items-center">
                 <div className="flex items-center">
                   <img
@@ -201,7 +183,7 @@ const Navbar: React.FC = () => {
                     {currentUser.name}
                   </span>
                 </div>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
@@ -222,7 +204,7 @@ const Navbar: React.FC = () => {
               </Link>
             </div>
           )}
-          
+
           <div className="flex items-center md:hidden">
             {currentUser && (
               <div className="relative mr-2">
@@ -240,7 +222,7 @@ const Navbar: React.FC = () => {
                 </button>
               </div>
             )}
-            
+
             <button
               type="button"
               className="p-1 rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -255,58 +237,54 @@ const Navbar: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Mobile menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden">
           <div className="pt-2 pb-3 space-y-1">
             <Link
               to="/"
-              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                location.pathname === '/'
+              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${location.pathname === '/'
                   ? 'border-blue-500 text-blue-700 bg-blue-50'
                   : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'
-              }`}
+                }`}
             >
               Dashboard
             </Link>
-            
+
             <Link
               to="/tickets"
-              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                location.pathname.startsWith('/tickets')
+              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${location.pathname.startsWith('/tickets')
                   ? 'border-blue-500 text-blue-700 bg-blue-50'
                   : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'
-              }`}
+                }`}
             >
               My Tickets
             </Link>
-            
+
             <Link
               to="/submit"
-              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                location.pathname === '/submit'
+              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${location.pathname === '/submit'
                   ? 'border-blue-500 text-blue-700 bg-blue-50'
                   : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'
-              }`}
+                }`}
             >
               Submit Ticket
             </Link>
-            
+
             {isAdmin && (
               <Link
                 to="/admin"
-                className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                  location.pathname.startsWith('/admin')
+                className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${location.pathname.startsWith('/admin')
                     ? 'border-blue-500 text-blue-700 bg-blue-50'
                     : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'
-                }`}
+                  }`}
               >
                 Admin Panel
               </Link>
             )}
           </div>
-          
+
           {currentUser ? (
             <div className="pt-4 pb-3 border-t border-gray-200">
               <div className="flex items-center px-4">
@@ -346,7 +324,7 @@ const Navbar: React.FC = () => {
           )}
         </div>
       )}
-      
+
       {/* Mobile notifications dropdown */}
       {isNotificationsOpen && (
         <div className="md:hidden absolute top-16 right-0 left-0 mx-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
@@ -354,7 +332,7 @@ const Navbar: React.FC = () => {
             <h3 className="px-4 py-2 text-sm font-semibold text-gray-700 border-b">
               Notifications
             </h3>
-            
+
             <div className="max-h-60 overflow-y-auto">
               {notifications.length === 0 ? (
                 <p className="px-4 py-2 text-sm text-gray-500">
@@ -364,9 +342,8 @@ const Navbar: React.FC = () => {
                 notifications.slice(0, 5).map((notification) => (
                   <div
                     key={notification.id}
-                    className={`px-4 py-2 border-b last:border-b-0 cursor-pointer hover:bg-gray-50 ${
-                      !notification.read ? 'bg-blue-50' : ''
-                    }`}
+                    className={`px-4 py-2 border-b last:border-b-0 cursor-pointer hover:bg-gray-50 ${!notification.read ? 'bg-blue-50' : ''
+                      }`}
                     onClick={() => handleNotificationClick(notification.id)}
                   >
                     <div className="text-sm text-gray-700">
@@ -379,7 +356,7 @@ const Navbar: React.FC = () => {
                 ))
               )}
             </div>
-            
+
             {notifications.length > 5 && (
               <Link
                 to="/notifications"
